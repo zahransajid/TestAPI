@@ -3,8 +3,9 @@ import sys
 import json
 import importlib.util
 from inspect import getmembers
+import threading as t
 from API.request import Request, BatchRequest
-from API.response import Response
+from API.response import Response, BatchResponse
 
 
 class APIRoute:
@@ -15,7 +16,7 @@ class APIRoute:
             if validate(readfrom):
                 self.load_from(readfrom)
         else:
-            self.name = kwargs['name']
+            self.name = kwargs["name"]
             self.url = kwargs["url"]
             self.req_type = kwargs["req_type"]
             self.headers = kwargs["headers"]
@@ -26,19 +27,20 @@ class APIRoute:
     def save(self, path):
         # Save to a directory
         # Check if it exists and make it if it doesnt
-        if os.path.exists(path) and os.path.isdir(path):
-            self._route_definition = {
-                "url": self.url,
-                "type": self.req_type,
-                "default_headers": self.headers,
-                "default_body": self.data,
-                "handler": self._handler_name,
-                "isBatchRequest": self.isBatch,
-                "maxRate": 5,
-            }
-            with open(os.path.join(path,"definition.json"),"w") as f:
-                json.dump(self._route_definition,f)
-                f.close()
+        if not (os.path.exists(path) and os.path.isdir(path)):
+            os.mkdir(path)
+        self._route_definition = {
+            "url": self.url,
+            "type": self.req_type,
+            "default_headers": self.headers,
+            "default_body": self.data,
+            "handler": self._handler_name,
+            "isBatchRequest": self.isBatch,
+            "maxRate": 5,
+        }
+        with open(os.path.join(path, "definition.json"), "w") as f:
+            json.dump(self._route_definition, f)
+            f.close()
 
     def load_from(self, path):
         with open(os.path.join(path, "definition.json")) as f:
@@ -67,8 +69,8 @@ class APIRoute:
             self.isBatch = self._route_definition["isBatchRequest"]
             f.close()
 
-    def execute(self) -> Response:
-        if(not self.isBatch):
+    def execute(self) -> Response or BatchResponse:
+        if not self.isBatch:
             req = Request(self.req_type, self.url, self.headers, self.data)
             req = self.request_handler(req)
             req.set_time()
@@ -78,15 +80,25 @@ class APIRoute:
             response.set_time()
             return self.response_handler(response)
         else:
+            threads = []
+            outputs = []
             for iter in self.iterator:
-                req = BatchRequest(self.req_type, self.url, self.headers, self.data,iter)
+                req = BatchRequest(
+                    self.req_type, self.url, self.headers, self.data, iter
+                )
                 req = self.request_handler(req)
                 req.set_time()
-                response = Response(
-                    req.func(req.url, headers=req.headers, data=req.data), request=req
-                )
-                response.set_time()
-                return self.response_handler(response)
+                threads.append(t.Thread(target=self.batchWorker, args=(req,outputs)))
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+            return outputs
+
+    def batchWorker(self, req: BatchRequest, outputs : list):
+        outputs.append(Response(
+            req.func(req.url, headers=req.headers, data=req.data), request=req
+        ))
 
 
 def validate(path):

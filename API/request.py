@@ -6,6 +6,7 @@ import time
 class Request:
     def __init__(self, method: str, url: str, headers: dict, data: dict) -> None:
         self.method = method
+        self.is_batch_request = False
         self.REQ_TYPES = {"GET": requests.get, "POST": requests.post}
         self.func = self.REQ_TYPES[self.method]
         self.url = url
@@ -15,6 +16,7 @@ class Request:
 
     def set_time(self):
         self.time = time.time()
+
 
 class BatchRequest(Request):
     def __init__(self, method: str, url: str, headers: dict, data: dict, iter) -> None:
