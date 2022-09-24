@@ -16,13 +16,12 @@ class APIRoute:
             if validate(readfrom):
                 self.load_from(readfrom)
         else:
-            self.name = kwargs["name"]
             self.url = kwargs["url"]
             self.req_type = kwargs["req_type"]
             self.headers = kwargs["headers"]
             self.data = kwargs["data"]
             self.isBatch = kwargs["isBatch"]
-            self._handler_name = self.name + ".py"
+            self._handler_name = "index.py"
 
     def save(self, path):
         # Save to a directory
@@ -88,17 +87,19 @@ class APIRoute:
                 )
                 req = self.request_handler(req)
                 req.set_time()
-                threads.append(t.Thread(target=self.batchWorker, args=(req,outputs)))
+                threads.append(t.Thread(target=self.batchWorker, args=(req, outputs)))
             for thread in threads:
                 thread.start()
             for thread in threads:
                 thread.join()
             return outputs
 
-    def batchWorker(self, req: BatchRequest, outputs : list):
-        outputs.append(Response(
-            req.func(req.url, headers=req.headers, data=req.data), request=req
-        ))
+    def batchWorker(self, req: BatchRequest, outputs: list):
+        outputs.append(
+            BatchResponse(
+                req.func(req.url, headers=req.headers, data=req.data), request=req
+            )
+        )
 
 
 def validate(path):

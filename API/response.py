@@ -13,6 +13,14 @@ class Response:
         self.content = self.response.content
         self.time = time.time()
 
+    def as_json(self):
+        return {
+            "Headers": self.headers,
+            "Raw": self.raw,
+            "Content": self.content,
+            "ResponseTime": self.response_time(),
+        }
+
     def isError(self) -> bool:
         return self.response.status_code > 400
 
@@ -27,6 +35,7 @@ class Response:
             preserve=["literal"],
         )
         return formatter.format_string(str(self.content))
+
     def response_time(self):
         return self.time - self.request.time
 

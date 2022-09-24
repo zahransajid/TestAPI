@@ -12,7 +12,7 @@ from API.route import APIRoute
 class GUI () :
     def __init__(s, q:multiprocessing.Queue) -> None:
         s.root = tk.Tk()
-        s.root.title("Forest")
+        s.root.title("TestAPI")
         s.root.option_add("*tearOff", False) # This is always a good idea
 
         s.queue = q
