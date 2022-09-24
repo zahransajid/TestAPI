@@ -7,7 +7,7 @@ from tkinter import font
 class GUI () :
     def __init__(s) -> None:
         s.root = tk.Tk()
-        s.root.title("Forest")
+        s.root.title("TestAPI")
         s.root.option_add("*tearOff", False) # This is always a good idea
 
         # Make the app responsive
@@ -25,7 +25,7 @@ class GUI () :
         style.theme_use("forest-dark")
         
         s.routes_directory_list =[ key + "\n" + item['url'] for key, item in json.loads(open("./routes.json").read()).items()]
-        s.methods_menu_list = ["POST", "GET", ""]
+        s.methods_menu_list = ["POST", "GET", "DELETE",]
         s.request ={
             "method": tk.StringVar(value=s.methods_menu_list[0]),
             "url": tk.StringVar(value="http://google.com"),
