@@ -1,11 +1,4 @@
-{
-  "route1": {
-    "url": "http://google.com/"
-  }, 
-  "route2": {
-    "url": "http://facebook.com/"
-  },
-  "route3": {
-    "url": "http://msn.com/"
-  }
-}
+[
+  "route1",
+  "route2"
+]

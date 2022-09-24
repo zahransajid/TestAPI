@@ -1,6 +1,6 @@
 {
-  "url": "https://google.com/",
-  "type": "GET",
+  "url": "https://google2.com/",
+  "type": "POST",
   "default_headers": {},
   "default_body": {},
   "handler": "route2.py",

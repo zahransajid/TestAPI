@@ -1,14 +1,21 @@
 from asyncore import read
+from copy import deepcopy
 import json
+from logging.handlers import QueueListener
+import multiprocessing
+from queue import Queue
 import tkinter as tk
 from tkinter import DISABLED, INSERT, NSEW, Label, ttk
 from tkinter import font
+from API.route import APIRoute
 
 class GUI () :
-    def __init__(s) -> None:
+    def __init__(s, q:multiprocessing.Queue) -> None:
         s.root = tk.Tk()
         s.root.title("Forest")
         s.root.option_add("*tearOff", False) # This is always a good idea
+
+        s.queue = q
 
         # Make the app responsive
         s.root.rowconfigure(index=0, weight=1)
@@ -24,8 +31,9 @@ class GUI () :
         # Set the theme with the theme_use method
         style.theme_use("forest-dark")
         
-        s.routes_directory_list =[ key + "\n" + item['url'] for key, item in json.loads(open("./routes.json").read()).items()]
-        s.methods_menu_list = ["POST", "GET", ""]
+        s.current_route = 0
+        s.routes_directory_list = [ APIRoute(i) for i in json.loads(open("./routes.json").read())]
+        s.methods_menu_list = ["POST", "GET", "PUT", "DELETE"]
         s.request ={
             "method": tk.StringVar(value=s.methods_menu_list[0]),
             "url": tk.StringVar(value="http://google.com"),
@@ -40,7 +48,14 @@ class GUI () :
 
         s.setup_directory_traversal_panel()
         s.setup_request_config_panel()
-        s.setup_response_config_panel()  
+        s.setup_response_config_panel() 
+        s.load_route(0)
+
+    def load_route(s, i : int) :
+        routes = s.routes_directory_list[i]
+        s.current_route = 0
+        s.request['method'].set(routes.req_type)
+        s.request['url'].set(routes.url)
 
     def setup_directory_traversal_panel (s) : 
         # The routes browser
@@ -48,7 +63,7 @@ class GUI () :
         routes_directory_frame.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky=NSEW)
         routes_directory_frame.columnconfigure(index=0, weight=1)
         for directory, i in zip(s.routes_directory_list, range(len(s.routes_directory_list))): 
-                button = ttk.Button(routes_directory_frame, text=directory, style="Accent.TButton")
+                button = ttk.Button(routes_directory_frame, text=directory.readfrom+ "\n" + directory.url, style="Accent.TButton", command= lambda j = i: s.load_route(j))
                 button.grid(row=i, column=0, sticky=NSEW, padx=5, pady=5)
 
     def setup_response_config_panel (s) :
@@ -133,7 +148,7 @@ class GUI () :
         request_configuration_frame.grid(row=0, column=1, pady=10, padx=10, sticky="nsew")
 
         request_configuration_frame.columnconfigure(index=1, weight=1)
-        request_method_combobox = ttk.Combobox(request_configuration_frame, state="readonly", values=s.methods_menu_list)
+        request_method_combobox = ttk.Combobox(request_configuration_frame, state="readonly", values=s.methods_menu_list, textvariable=s.request['method'])
         request_method_combobox.set(s.methods_menu_list[0])
         request_method_combobox.grid(row=0, column=0, padx=5, pady=10,  sticky="ew")
 
@@ -155,11 +170,20 @@ class GUI () :
 
         # Start the main loop
         s.root.mainloop()
+    
+    def send_request (s) :
+        s.
+    def listener (s) :
+        try:
+            res = s.thread_queue.get(0)
+        except queues.Empty:
+            s.root.after(100, s.listener)
+
 
     
  
 
 
 if __name__ == "__main__" : 
-    g = GUI()
+    g = GUI(multiprocessing.Queue())
     g.run()
