@@ -11,6 +11,10 @@ class Response:
         self.raw = self.response.raw
         self.content = self.response.content
         self.time = time.time()
+    
+    def isError(self) -> bool:
+        return self.response.status_code > 400
 
     def set_time(self):
         self.time = time.time()
+

@@ -3,7 +3,7 @@ import sys
 import json
 import importlib.util
 from inspect import getmembers
-from API.request import Request
+from API.request import Request, BatchRequest
 from API.response import Response
 
 
@@ -20,6 +20,7 @@ class APIRoute:
             self.req_type = kwargs["req_type"]
             self.headers = kwargs["headers"]
             self.data = kwargs["data"]
+            self.isBatch = kwargs["isBatch"]
             self._handler_name = self.name + ".py"
 
     def save(self, path):
@@ -32,7 +33,7 @@ class APIRoute:
                 "default_headers": self.headers,
                 "default_body": self.data,
                 "handler": self._handler_name,
-                "isBatchRequest": False,
+                "isBatchRequest": self.isBatch,
                 "maxRate": 5,
             }
             with open(os.path.join(path,"definition.json"),"w") as f:
@@ -63,17 +64,29 @@ class APIRoute:
             self.req_type = self._route_definition["type"]
             self.headers = self._route_definition["default_headers"]
             self.data = self._route_definition["default_body"]
+            self.isBatch = self._route_definition["isBatchRequest"]
             f.close()
 
     def execute(self) -> Response:
-        req = Request(self.req_type, self.url, self.headers, self.data)
-        req = self.request_handler(req)
-        req.set_time()
-        response = Response(
-            req.func(req.url, headers=req.headers, data=req.data), request=req
-        )
-        response.set_time()
-        return self.response_handler(response)
+        if(not self.isBatch):
+            req = Request(self.req_type, self.url, self.headers, self.data)
+            req = self.request_handler(req)
+            req.set_time()
+            response = Response(
+                req.func(req.url, headers=req.headers, data=req.data), request=req
+            )
+            response.set_time()
+            return self.response_handler(response)
+        else:
+            for iter in self.iterator:
+                req = BatchRequest(self.req_type, self.url, self.headers, self.data,iter)
+                req = self.request_handler(req)
+                req.set_time()
+                response = Response(
+                    req.func(req.url, headers=req.headers, data=req.data), request=req
+                )
+                response.set_time()
+                return self.response_handler(response)
 
 
 def validate(path):
