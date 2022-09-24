@@ -8,22 +8,36 @@ from API.response import Response
 
 
 class APIRoute:
-    def __init__(self, readfrom=None,*args,**kwargs):
+    def __init__(self, readfrom=None, *args, **kwargs):
         # Loads in from directory if it exists
         self.readfrom = readfrom
         if readfrom != None:
             if validate(readfrom):
                 self.load_from(readfrom)
         else:
-            self.url = kwargs['url']
-            self.req_type = kwargs['req_type']
-            self.headers = kwargs['headers']
-            self.data = kwargs['data']
+            self.name = kwargs['name']
+            self.url = kwargs["url"]
+            self.req_type = kwargs["req_type"]
+            self.headers = kwargs["headers"]
+            self.data = kwargs["data"]
+            self._handler_name = self.name + ".py"
 
     def save(self, path):
         # Save to a directory
         # Check if it exists and make it if it doesnt
-        pass
+        if os.path.exists(path) and os.path.isdir(path):
+            self._route_definition = {
+                "url": self.url,
+                "type": self.req_type,
+                "default_headers": self.headers,
+                "default_body": self.data,
+                "handler": self._handler_name,
+                "isBatchRequest": False,
+                "maxRate": 5,
+            }
+            with open(os.path.join(path,"definition.json"),"w") as f:
+                json.dump(self._route_definition,f)
+                f.close()
 
     def load_from(self, path):
         with open(os.path.join(path, "definition.json")) as f:
@@ -55,7 +69,9 @@ class APIRoute:
         req = Request(self.req_type, self.url, self.headers, self.data)
         req = self.request_handler(req)
         req.set_time()
-        response = Response(req.func(req.url, headers=req.headers, data=req.data),request=req)
+        response = Response(
+            req.func(req.url, headers=req.headers, data=req.data), request=req
+        )
         response.set_time()
         return self.response_handler(response)
 
