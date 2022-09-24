@@ -1,6 +1,5 @@
 execute_request = "ExecuteRequest"
-make_new_route = "MakeNewRoute"
-on_change_route_data = "OnChangeRouteData"
+make_new_or_update_route = "MakeNewRoute"
 delete_route = "DeleteRoute"
 run_batch_test = "RunBatchTest"
 

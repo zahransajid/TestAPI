@@ -16,13 +16,12 @@ class APIRoute:
             if validate(readfrom):
                 self.load_from(readfrom)
         else:
-            self.name = kwargs["name"]
             self.url = kwargs["url"]
             self.req_type = kwargs["req_type"]
             self.headers = kwargs["headers"]
             self.data = kwargs["data"]
             self.isBatch = kwargs["isBatch"]
-            self._handler_name = self.name + ".py"
+            self._handler_name = "index.py"
 
     def save(self, path):
         # Save to a directory
