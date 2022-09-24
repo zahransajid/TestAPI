@@ -27,6 +27,7 @@ class Response:
             preserve=["literal"],
         )
         return formatter.format_string(str(self.content))
+
     def response_time(self):
         return self.time - self.request.time
 

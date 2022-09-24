@@ -1,4 +1,4 @@
-from API import route
+from API import route,testing
 import tkinter as tk
 from tkinter import ttk
 
@@ -19,4 +19,6 @@ if __name__ == '__main__':
     # style = ttk.Style(root)
     # style.theme_use("forest-dark")
     # root.mainloop()
-    main()
+    r1 = route.APIRoute("route1")
+    testing.stress_expn(r1,100)
+    

@@ -88,17 +88,19 @@ class APIRoute:
                 )
                 req = self.request_handler(req)
                 req.set_time()
-                threads.append(t.Thread(target=self.batchWorker, args=(req,outputs)))
+                threads.append(t.Thread(target=self.batchWorker, args=(req, outputs)))
             for thread in threads:
                 thread.start()
             for thread in threads:
                 thread.join()
             return outputs
 
-    def batchWorker(self, req: BatchRequest, outputs : list):
-        outputs.append(Response(
-            req.func(req.url, headers=req.headers, data=req.data), request=req
-        ))
+    def batchWorker(self, req: BatchRequest, outputs: list):
+        outputs.append(
+            BatchResponse(
+                req.func(req.url, headers=req.headers, data=req.data), request=req
+            )
+        )
 
 
 def validate(path):
