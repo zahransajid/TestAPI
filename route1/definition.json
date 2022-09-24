@@ -1,0 +1,9 @@
+{
+  "url": "https://google.com/",
+  "type": "GET",
+  "default_headers": {},
+  "default_body": {},
+  "handler": "route1.py",
+  "isBatchRequest": false,
+  "maxRate": 5
+}
