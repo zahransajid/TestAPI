@@ -23,8 +23,8 @@ class GUI () :
 
         # Make the app responsive
         s.root.rowconfigure(index=0, weight=1)
-        s.root.rowconfigure(index=1, weight=1)
-        s.root.columnconfigure(index=1, weight=1)
+        s.root.rowconfigure(index=1, weight=4)
+        s.root.columnconfigure(index=1, weight=3)
 
         # Create a style
         style = ttk.Style(s.root)
@@ -68,7 +68,7 @@ class GUI () :
 
     def load_route(s, i : int) :
         routes = s.routes_directory_list[i]
-        s.current_route = 0
+        s.current_route = i
         s.request['method'].set(routes.req_type)
         s.request['url'].set(routes.url)
         s.request['headers'] = routes.headers
