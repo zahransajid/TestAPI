@@ -62,15 +62,19 @@ def main():
     p.start()
     # The main loop
     while True : 
-        print("waiting")
-        msg = rcx.get()
-        resp = handlers[msg['Event']](msg['Data'])
-        response = {
-            "Event": msg['Event'],
-            "Data": resp
-        }
-        print(response)
-        trx.put(response)
+        try: 
+            print("listening for events ...")
+            msg = rcx.get()
+            resp = handlers[msg['Event']](msg['Data'])
+            
+            response = {
+                "Event": msg['Event'],
+                "Data": resp
+            }
+            print(response)
+            trx.put(response)
+        except Exception as e :
+            print("Handler failed : ", e)
                 
 
 if __name__  == "__main__" :

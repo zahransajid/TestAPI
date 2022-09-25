@@ -6,7 +6,7 @@ import multiprocessing
 from queue import Queue
 import queue
 import tkinter as tk
-from tkinter import DISABLED, INSERT, NSEW, Label, ttk
+from tkinter import DISABLED, INSERT, NSEW, VERTICAL, Canvas, Label, Scrollbar, StringVar, ttk
 from tkinter import font
 from tkinter import messagebox
 from API.route import APIRoute
@@ -24,7 +24,7 @@ class GUI () :
         # Make the app responsive
         s.root.rowconfigure(index=0, weight=1)
         s.root.rowconfigure(index=1, weight=4)
-        s.root.columnconfigure(index=1, weight=3)
+        s.root.columnconfigure(index=1, weight=4)
 
         # Create a style
         style = ttk.Style(s.root)
@@ -35,9 +35,10 @@ class GUI () :
         # Set the theme with the theme_use method
         style.theme_use("forest-dark")
         
+        s.logging = StringVar("")
         s.current_route = 0
         s.routes_directory_list = [ APIRoute(i) for i in json.loads(open("./routes.json").read())]
-        s.methods_menu_list = ["POST", "GET", "PUT", "DELETE"]
+        s.methods_menu_list = ["GET", "POST", "PUT", "DELETE"]
         s.request ={
             "method": tk.StringVar(value=s.methods_menu_list[0]),
             "url": tk.StringVar(value="http://google.com"),
@@ -94,17 +95,22 @@ class GUI () :
 
         # Tab #1 Raw Body Response Pane
         response_raw_data_pane = ttk.LabelFrame(notebook)
+        response_raw_data_pane.pack(expand=True, fill="both", padx=5, pady=5)
         response_raw_data_text = tk.Text(response_raw_data_pane )
         response_raw_data_text.grid(row=0, column=0, sticky=tk.NSEW)
         response_raw_data_text.insert(INSERT, s.response['body'])
-        response_raw_data_text.config(state=DISABLED)
+        # response_raw_data_text.config(state=DISABLED)
         notebook.add(response_raw_data_pane, text="Raw Text")
 
         # Tab #2 - Response Headers
-        response_header_pane = ttk.Frame(notebook)
+        response_header_pane = Canvas(notebook)
+        response_header_pane.pack(expand=True, fill="both", padx=5, pady=5)
         response_header_pane.columnconfigure(index=0, weight=1)
         response_header_pane.columnconfigure(index=1, weight=1)
 
+        sb = Scrollbar(response_header_pane, orient=VERTICAL)
+        sb.grid(column=2, rowspan=len(s.response['headers']), row=0, sticky="nsew")
+        sb.config(command=response_header_pane.yview)
 
         for (header, value), i in zip(s.response['headers'].items(), range(len(s.response['headers']))) :
             text = Label(response_header_pane, text=header, relief=tk.GROOVE, font=('Courier', 10))
@@ -119,6 +125,7 @@ class GUI () :
 
         # Tab #3 
         tab_3 = ttk.Frame(notebook)
+        tab_3.pack(expand=True, fill="both", padx=5, pady=5)        
         notebook.add(tab_3, text="Logging")
         notebook.pack(expand=True, fill="both", padx=5, pady=5)
 
@@ -197,6 +204,9 @@ class GUI () :
             
             elif event == events.make_new_or_update_route : 
                 messagebox.showinfo("Update Route", "Route Save Successfully")
+            
+            elif event == events.update_log :
+                s.logging.set(s.logging.get( + "\n" + dat['Message']))
 
             s.root.after(100, s.listener)
         except queue.Empty:
