@@ -6,5 +6,4 @@ def make(req: Request):
 
 
 def receive(rec: Response):
-    rec.content = str(rec.content).split("\\")
     return rec

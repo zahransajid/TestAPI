@@ -1,1 +1,9 @@
-{"url": "https://bing.com", "type": "GET", "default_headers": {}, "default_body": {}, "handler": "index.py", "isBatchRequest": false, "maxRate": 5}
+{
+  "url": "https://catfact.ninja/fact",
+  "type": "GET",
+  "default_headers": {},
+  "default_body": {},
+  "handler": "index.py",
+  "isBatchRequest": false,
+  "maxRate": 5
+}
