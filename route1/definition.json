@@ -1,1 +1,12 @@
-{"url": "https://google.com/images/2/3", "type": "GET", "default_headers": {}, "default_body": {}, "handler": "index.py", "isBatchRequest": false, "maxRate": 5}
+{
+  "url": "https://google.com/images/2/3",
+  "type": "GET",
+  "default_headers": {},
+  "default_body": {
+    "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+    "Connection": "keep-alive"
+  },
+  "handler": "index.py",
+  "isBatchRequest": false,
+  "maxRate": 5
+}

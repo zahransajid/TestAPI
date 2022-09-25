@@ -41,6 +41,11 @@ class GUI () :
         s.request ={
             "method": tk.StringVar(value=s.methods_menu_list[0]),
             "url": tk.StringVar(value="http://google.com"),
+            "headers": {
+                "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+                "Keep-Alive": "300",
+                "Connection": "keep-alive",
+            }
         }
 
         s.response = {
@@ -48,7 +53,7 @@ class GUI () :
             "headers": {
             "Status Code": "200",
             "Connection": "Keep Alive",
-            "Content Encoding": "Keep-Alive",
+            "Content Encoding": "g-zp",
             "x-frame-options": "DENY"
             }
         }
@@ -66,6 +71,8 @@ class GUI () :
         s.current_route = 0
         s.request['method'].set(routes.req_type)
         s.request['url'].set(routes.url)
+        s.request['headers'] = routes.headers
+        s.setup_request_config_panel()
 
     def setup_directory_traversal_panel (s) : 
         # The routes browser
@@ -128,10 +135,22 @@ class GUI () :
         request_url_entry = ttk.Entry(request_configuration_frame, textvariable=s.request['url'])
         request_url_entry.grid(row=0, column=1, padx=5, pady=10, sticky="ew")
 
+        request_config_headers_frame = ttk.LabelFrame(request_configuration_frame, text="Request Headers", padding=(20, 10))
+        request_config_headers_frame.grid(row=1, column=0, columnspan=2)
+        
+        for (header, value), i in zip(s.request['headers'].items(), range(len(s.request['headers']))) :
+            text = Label(request_config_headers_frame, text=header, relief=tk.GROOVE, font=('Courier', 10))
+            text.grid(row=i, column=0, padx=5, pady=5, sticky=NSEW)
+            value = Label(request_config_headers_frame, text=value, relief=tk.GROOVE, font=('Courier', 10))
+            value.grid(row=i, column=1, padx=5, pady=5, sticky=NSEW)
+
         send_request_button = ttk.Button(request_configuration_frame, text="Send Request", command=s.send_request)
-        send_request_button.grid(row=1, column=1, columnspan=1, sticky=NSEW, padx=5, pady=10)
+        send_request_button.grid(row=2, column=1, columnspan=1, sticky=NSEW, padx=5, pady=10)
         save_request_button = ttk.Button(request_configuration_frame, text="Save Request", command=s.update_routes)
-        save_request_button.grid(row=1, column=0, columnspan=1, sticky=NSEW, padx=5, pady=10)
+        save_request_button.grid(row=2, column=0, columnspan=1, sticky=NSEW, padx=5, pady=10)
+
+        
+
 
     def run(s) :
         s.root.mainloop()

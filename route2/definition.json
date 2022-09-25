@@ -1,7 +1,11 @@
 {
   "url": "https://google2.com/",
   "type": "POST",
-  "default_headers": {},
+  "default_headers": {
+    "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+    "Keep-Alive": "300",
+    "Connection": "keep-alive"
+  },
   "default_body": {},
   "handler": "index.py",
   "isBatchRequest": false,
