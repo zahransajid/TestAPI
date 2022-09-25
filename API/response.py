@@ -1,7 +1,6 @@
 import requests
 from API.request import Request
 import time
-import xmlformatter
 
 
 class Response:
@@ -36,15 +35,6 @@ class Response:
 
     def set_time(self):
         self.time = time.time()
-
-    def prettify(self):
-        formatter = xmlformatter.Formatter(
-            indent="1",
-            indent_char="\t",
-            encoding_output="ISO-8859-1",
-            preserve=["literal"],
-        )
-        return formatter.format_string(str(self.content))
 
     def response_time(self):
         return self.time - self.request.time
