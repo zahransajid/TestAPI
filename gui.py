@@ -4,18 +4,22 @@ import json
 from logging.handlers import QueueListener
 import multiprocessing
 from queue import Queue
+import queue
 import tkinter as tk
 from tkinter import DISABLED, INSERT, NSEW, Label, ttk
 from tkinter import font
+from tkinter import messagebox
 from API.route import APIRoute
+from events import Events as events
 
 class GUI () :
-    def __init__(s, q:multiprocessing.Queue) -> None:
+    def __init__(s, rcx:multiprocessing.Queue, trx:multiprocessing.Queue) -> None:
         s.root = tk.Tk()
         s.root.title("TestAPI")
         s.root.option_add("*tearOff", False) # This is always a good idea
 
-        s.queue = q
+        s.trx = rcx
+        s.rcx = trx
 
         # Make the app responsive
         s.root.rowconfigure(index=0, weight=1)
@@ -40,8 +44,13 @@ class GUI () :
         }
 
         s.response = {
-            "body": tk.StringVar(value="Send a Request to view the response body"),
-            "headers": {},
+            "body": "Send a Request to view the response body",
+            "headers": {
+            "Status Code": "200",
+            "Connection": "Keep Alive",
+            "Content Encoding": "Keep-Alive",
+            "x-frame-options": "DENY"
+            }
         }
 
         s.logging = tk.StringVar(value="Logging Started ...")
@@ -50,6 +59,7 @@ class GUI () :
         s.setup_request_config_panel()
         s.setup_response_config_panel() 
         s.load_route(0)
+        s.listener()
 
     def load_route(s, i : int) :
         routes = s.routes_directory_list[i]
@@ -77,40 +87,9 @@ class GUI () :
 
         # Tab #1 Raw Body Response Pane
         response_raw_data_pane = ttk.LabelFrame(notebook)
-        raw_response_data = '''
-        <!doctype html>
-
-        <html lang="en">
-        <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-
-        <title>A Basic HTML5 Template</title>
-        <meta name="description" content="A simple HTML5 Template for new projects.">
-        <meta name="author" content="SitePoint">
-
-        <meta property="og:title" content="A Basic HTML5 Template">
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="https://www.sitepoint.com/a-basic-html5-template/">
-        <meta property="og:description" content="A simple HTML5 Template for new projects.">
-        <meta property="og:image" content="image.png">
-
-        <link rel="icon" href="/favicon.ico">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-        <link rel="stylesheet" href="css/styles.css?v=1.0">
-
-        </head>
-
-        <body>
-        <!-- your content here... -->
-        <script src="js/scripts.js"></script>
-        </body>
-        </html>'''
         response_raw_data_text = tk.Text(response_raw_data_pane )
         response_raw_data_text.grid(row=0, column=0, sticky=tk.NSEW)
-        response_raw_data_text.insert(INSERT, raw_response_data)
+        response_raw_data_text.insert(INSERT, s.response['body'])
         response_raw_data_text.config(state=DISABLED)
         notebook.add(response_raw_data_pane, text="Raw Text")
 
@@ -118,18 +97,12 @@ class GUI () :
         response_header_pane = ttk.Frame(notebook)
         response_header_pane.columnconfigure(index=0, weight=1)
         response_header_pane.columnconfigure(index=1, weight=1)
-        response_headers = {
-            "Status Code": "200",
-            "Connection": "Keep Alive",
-            "Content Encoding": "Keep-Alive",
-            "Server": "Apache",
-            "x-frame-options": "DENY"
-        }
 
-        for (header, value), i in zip(response_headers.items(), range(len(response_headers))) :
-            text = Label(response_header_pane, text=header, relief=tk.GROOVE, font=('Courier', 15))
+
+        for (header, value), i in zip(s.response['headers'].items(), range(len(s.response['headers']))) :
+            text = Label(response_header_pane, text=header, relief=tk.GROOVE, font=('Courier', 10))
             text.grid(row=i, column=0, padx=5, pady=5, sticky=NSEW)
-            value = Label(response_header_pane, text=value, relief=tk.GROOVE, font=('Courier', 15))
+            value = Label(response_header_pane, text=value, relief=tk.GROOVE, font=('Courier', 10))
             value.grid(row=i, column=1, padx=5, pady=5, sticky=NSEW)
 
 
@@ -155,8 +128,10 @@ class GUI () :
         request_url_entry = ttk.Entry(request_configuration_frame, textvariable=s.request['url'])
         request_url_entry.grid(row=0, column=1, padx=5, pady=10, sticky="ew")
 
-        send_request_button = ttk.Button(request_configuration_frame, text="Send Request")
-        send_request_button.grid(row=1, column=0, columnspan=2, sticky=NSEW, padx=5, pady=10)
+        send_request_button = ttk.Button(request_configuration_frame, text="Send Request", command=s.send_request)
+        send_request_button.grid(row=1, column=1, columnspan=1, sticky=NSEW, padx=5, pady=10)
+        save_request_button = ttk.Button(request_configuration_frame, text="Save Request", command=s.update_routes)
+        save_request_button.grid(row=1, column=0, columnspan=1, sticky=NSEW, padx=5, pady=10)
 
     def run(s) :
         s.root.mainloop()
@@ -172,11 +147,40 @@ class GUI () :
         s.root.mainloop()
     
     def send_request (s) :
-        s.
+        s.trx.put({
+            "Event": "ExecuteRequest",
+            "Data": {
+                "Path" : s.routes_directory_list[s.current_route].readfrom
+            }
+        })
+    
+    def update_routes (s) : 
+        s.trx.put({
+            "Event": events.make_new_or_update_route,
+            "Data": {
+                "ReqType": s.request['method'].get(),
+                "Path": s.routes_directory_list[s.current_route].readfrom,
+                "Url": s.request['url'].get(),
+                "Headers": {}
+            }
+        })
+        
     def listener (s) :
         try:
-            res = s.thread_queue.get(0)
-        except queues.Empty:
+            res = s.rcx.get(0)
+            event = res['Event']
+            dat = res['Data']
+            if event == events.execute_request:
+                print("got response")
+                s.response['body'] = dat['Content']
+                s.response['headers'] = dat['Headers']
+                s.setup_response_config_panel()
+            
+            elif event == events.make_new_or_update_route : 
+                messagebox.showinfo("Update Route", "Route Save Successfully")
+
+            s.root.after(100, s.listener)
+        except queue.Empty:
             s.root.after(100, s.listener)
 
 

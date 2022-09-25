@@ -1,9 +1,1 @@
-{
-  "url": "https://google.com/",
-  "type": "GET",
-  "default_headers": {},
-  "default_body": {},
-  "handler": "route1.py",
-  "isBatchRequest": false,
-  "maxRate": 5
-}
+{"url": "https://google.com/images/2/3", "type": "GET", "default_headers": {}, "default_body": {}, "handler": "index.py", "isBatchRequest": false, "maxRate": 5}
