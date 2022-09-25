@@ -1,4 +1,4 @@
-from audioop import mul
+import multiprocessing
 from queue import Queue
 from API import route, testing
 import tkinter as tk
@@ -6,18 +6,23 @@ from gui import GUI
 from multiprocessing import Process
 from tkinter import ttk
 import os
+from events import Events as events 
 
 
 def execute_request(data: dict):
     path = data["Path"]
     api_route = route.APIRoute(path)
     result = api_route.execute()
-    return result.as_json()
+    return {
+                "Headers" : result.headers,
+                "Content": str(result.content)
+            }
 
 
 def make_new_route(data: dict):
     path = data["Path"]
     api_route = route.APIRoute(
+        url=data["Url"],
         readfrom=None,
         req_type=data["ReqType"],
         headers=data["Headers"],
@@ -25,6 +30,7 @@ def make_new_route(data: dict):
         isBatch=False,
         handler_name="index.py",
     )
+    api_route.save(path)
     return None
 
 
@@ -38,13 +44,35 @@ def run_batch_test(data: dict):
     testing.stress_expn(data["MaxN"])
     return None
 
-class EventManager():
-    def __init__(self) -> None:
-       
-    def loop(self) -> None:
-            self.res = self.thread_queue.get()
-            self._print(self.res)
-            self.root.after(100, self.listen_for_result)
+handlers = {
+    events.execute_request: execute_request,
+    events.delete_route: delete_route,
+    events.make_new_or_update_route: make_new_route,
+    events.run_batch_test: run_batch_test,
+}
+def run_gui (rcx: multiprocessing.Queue, trx: multiprocessing.Queue) : 
+    g = GUI(rcx, trx)
+    g.run()
 
 def main():
-    p = Process(lambda : GUI())
+    rcx = multiprocessing.Queue()
+    trx = multiprocessing.Queue()
+    p = Process(target=run_gui, args=(rcx, trx))
+    p.start()
+    # The main loop
+    while True : 
+        print("waiting")
+        msg = rcx.get()
+        resp = handlers[msg['Event']](msg['Data'])
+        response = {
+            "Event": msg['Event'],
+            "Data": resp
+        }
+        print(response)
+        trx.put(response)
+                
+
+if __name__  == "__main__" :
+    main()
+
+
