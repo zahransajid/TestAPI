@@ -1,5 +1,9 @@
+from audioop import mul
+from queue import Queue
 from API import route, testing
 import tkinter as tk
+from gui import GUI
+from multiprocessing import Process
 from tkinter import ttk
 import os
 
@@ -33,3 +37,14 @@ def delete_route(data: dict):
 def run_batch_test(data: dict):
     testing.stress_expn(data["MaxN"])
     return None
+
+class EventManager():
+    def __init__(self) -> None:
+       
+    def loop(self) -> None:
+            self.res = self.thread_queue.get()
+            self._print(self.res)
+            self.root.after(100, self.listen_for_result)
+
+def main():
+    p = Process(lambda : GUI())
