@@ -5,6 +5,11 @@ import xmlformatter
 
 
 class Response:
+    """Defines the class for handling responses.
+    
+    Parameters:
+    - response : a requests.Response object returned by a requests method.
+    - request : the request object responsible for the response"""
     def __init__(self, response: requests.Response, request: Request) -> None:
         self.response = response
         self.headers = self.response.headers
@@ -14,6 +19,11 @@ class Response:
         self.time = time.time()
 
     def as_json(self):
+        """Returns dictionary with
+        - Headers
+        - Raw
+        - Content
+        - ResponseTime"""
         return {
             "Headers": self.headers,
             "Raw": self.raw,

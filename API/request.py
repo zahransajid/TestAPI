@@ -4,6 +4,11 @@ import time
 
 
 class Request:
+    """Defines the class for defining requests
+    - method : GET, POST, DELETE, PUT, PATCH
+    - url : The url to make the request to
+    - headers : Dictionary of headers
+    - data : Dictionary of data"""
     def __init__(self, method: str, url: str, headers: dict, data: dict) -> None:
         self.method = method
         self.is_batch_request = False
