@@ -8,6 +8,8 @@ The program is highly modular and affords the user both high and low level acces
 
 The modular nature allows the user to write their own tests and show statistics as needed.
 
+For installation, refer to `BUILDING.md`
+
 ### Structure
 
 Each API route is assigned its own folder containing a `definition.json` file and a `index.py` file.
@@ -21,6 +23,17 @@ The `index.py` file has two functions `make` and `receive` which are called on t
 Due to the modular nature of each API route and the usage of python scripting, the sky is literally the limit when it comes to filtering and manipulating API requests and responses.
 
 In addition, the prebuilt data and utility classes help provide a simplified interface.
+
+For example, consider the filter to tell us when we get a long cat fact
+
+```python
+def receive(rec: Response):
+    data = json.loads(rec.content)
+    l = data['length']
+    if(l > 40):
+        print(f"Its a large cat fact!\nIts {l} chars long.")
+    return rec
+```
 
 ### Ease of use
 
