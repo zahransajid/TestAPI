@@ -9,6 +9,17 @@ from API.response import Response, BatchResponse
 
 
 class APIRoute:
+    """API route object containing data and methods to query a route
+    
+    Parameters:-
+    - readfrom : default None, represents the folder with respect to main where the API definition file is
+    - url : url of route
+    - req_type : POST, GET, DELETE or similar methods, refer to requests.py for more
+    - header : dict type containing headers
+    - data : dict type containing request data
+    - isBatch : boolean value set to false unless required.
+    Notes:
+    Set object's isBatchRequest to 1 to manually activate batch requests and iterator value to appropriate range or iterable"""
     def __init__(self, readfrom=None, *args, **kwargs):
         # Loads in from directory if it exists
         self.readfrom = readfrom
@@ -24,6 +35,7 @@ class APIRoute:
             self._handler_name = "index.py"
 
     def save(self, path):
+        """Saves to directory, creates one if not found"""
         # Save to a directory
         # Check if it exists and make it if it doesnt
         if not (os.path.exists(path) and os.path.isdir(path)):
@@ -42,6 +54,7 @@ class APIRoute:
             f.close()
 
     def load_from(self, path):
+        """Loads in APIRoute object from specified folder path"""
         with open(os.path.join(path, "definition.json")) as f:
             # Load in API definition
             self._route_definition = json.load(f)
@@ -69,6 +82,7 @@ class APIRoute:
             f.close()
 
     def execute(self) -> Response or BatchResponse:
+        """Call execute to run the request, returns a Request object"""
         if not self.isBatch:
             req = Request(self.req_type, self.url, self.headers, self.data)
             req = self.request_handler(req)
@@ -95,6 +109,7 @@ class APIRoute:
             return outputs
 
     def batchWorker(self, req: BatchRequest, outputs: list):
+        """To use for multithreaded requests"""
         outputs.append(
             BatchResponse(
                 req.func(req.url, headers=req.headers, data=req.data), request=req
@@ -103,4 +118,8 @@ class APIRoute:
 
 
 def validate(path):
-    return True
+    """Check validity of path by checking if defenitions.json is present"""
+    if(os.path.isfile(os.path.join(path,"definition.json"))):
+        return True
+    else:
+        return False
