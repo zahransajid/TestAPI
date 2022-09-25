@@ -8,4 +8,4 @@ The program is highly modular and affords the user both high and low level acces
 
 The modular nature allows the user to write their own tests and show statistics as needed.
 
-![GUI](https://github.com/zahransajid/TestAPI/blob/master/screenshots/screenshot1.jpeg?raw=true)
+![GUI](https://github.com/zahransajid/TestAPI/blob/master/screenshots/screenshot2.jpeg?raw=true)
