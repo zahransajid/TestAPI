@@ -13,8 +13,9 @@ def execute_request(data: dict):
     path = data["Path"]
     api_route = route.APIRoute(path)
     result = api_route.execute()
+    headers = { k : v[0:15] for k,v in result.headers.items()}
     return {
-                "Headers" : result.headers,
+                "Headers" : headers,
                 "Content": str(result.content)
             }
 
