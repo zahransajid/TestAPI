@@ -4,4 +4,5 @@ class Events:
     delete_route = "DeleteRoute"
     run_batch_test = "RunBatchTest"
     update_log = "UpdateLog"
+    on_kill = "OnKill"
 

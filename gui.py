@@ -5,6 +5,7 @@ from logging.handlers import QueueListener
 import multiprocessing
 from queue import Queue
 import queue
+import sys
 import tkinter as tk
 from tkinter import DISABLED, INSERT, NSEW, VERTICAL, Canvas, Label, Scrollbar, StringVar, ttk
 from tkinter import font
@@ -64,8 +65,10 @@ class GUI () :
         s.setup_directory_traversal_panel()
         s.setup_request_config_panel()
         s.setup_response_config_panel() 
+        s.root.protocol("WM_DELETE_WINDOW", s.onClose)
         s.load_route(0)
         s.listener()
+
 
     def load_route(s, i : int) :
         routes = s.routes_directory_list[i]
@@ -190,6 +193,17 @@ class GUI () :
                 "Headers": {}
             }
         })
+    
+    def onClose (s) :
+        s.root.destroy()
+        s.trx.put(
+            {
+                "Event" : events.on_kill,
+                "Data": None
+            }
+        )
+        sys.exit(0)
+        
         
     def listener (s) :
         try:

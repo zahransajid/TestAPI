@@ -1,5 +1,6 @@
 import multiprocessing
 from queue import Queue
+import sys
 from API import route, testing
 import tkinter as tk
 from gui import GUI
@@ -45,11 +46,15 @@ def run_batch_test(data: dict):
     testing.stress_expn(data["MaxN"])
     return None
 
+def on_close (data : None)  :
+    sys.exit(0)
+
 handlers = {
     events.execute_request: execute_request,
     events.delete_route: delete_route,
     events.make_new_or_update_route: make_new_route,
     events.run_batch_test: run_batch_test,
+    events.on_kill: on_close
 }
 def run_gui (rcx: multiprocessing.Queue, trx: multiprocessing.Queue) : 
     g = GUI(rcx, trx)
@@ -66,7 +71,6 @@ def main():
             print("listening for events ...")
             msg = rcx.get()
             resp = handlers[msg['Event']](msg['Data'])
-            
             response = {
                 "Event": msg['Event'],
                 "Data": resp
